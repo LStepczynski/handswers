@@ -1,0 +1,71 @@
+import { Request, Response, NextFunction } from "express";
+import { AppError, StatusError, UserError } from "@utils/statusError";
+import { ErrorResponse } from "@type/index";
+
+import dotenv from "dotenv";
+dotenv.config();
+
+/**
+ * Middleware for centralized error handling
+ *
+ * @param {(AppError | Error)} err
+ * @param {Request} req
+ * @param {Response} res
+ * @param {NextFunction} next
+ */
+export const errorHandler = (
+  err: AppError | Error,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  // Handle invalid JSON syntax errors
+  if (err instanceof SyntaxError && "body" in err) {
+    return res.status(400).json({
+      status: "error",
+      data: null,
+      message: "Invalid JSON format",
+      statusCode: 400,
+    });
+  }
+
+  // Determine if the error is an instance of StatusError
+  const isAppError = err instanceof StatusError;
+
+  // Default error properties
+  const statusCode = isAppError ? err.status : 500;
+  const message =
+    isAppError && err.isUserError
+      ? err.message
+      : "An unexpected error occurred. Please try again later.";
+
+  // Construct error response
+  const resp: ErrorResponse = {
+    status: "error",
+    data: null,
+    message,
+    statusCode: statusCode,
+  };
+
+  // Include stack trace in development mode
+  if (process.env.DEV_STATE === "development") {
+    resp.stack = err.stack;
+  }
+
+  // Log error if it is not an App error or if the app is not in production
+  if (
+    !isAppError ||
+    (isAppError && err.status == 500) ||
+    process.env.DEV_STATE !== "production"
+  ) {
+    console.error(
+      "Error:",
+      isAppError ? err.message : "",
+      `Error Stack: ${err.stack}`,
+      (err as AppError)?.details ?? []
+    );
+  }
+
+  // Send response
+  res.status(resp.statusCode).json(resp);
+};

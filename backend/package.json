@@ -1,0 +1,27 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "deploy": "serverless deploy",
+    "dev": "serverless offline",
+    "build": "serverless package"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.18.2",
+    "serverless-http": "^3.2.0"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.8",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.13.11",
+    "serverless": "^3.40.0",
+    "serverless-esbuild": "^1.55.0",
+    "serverless-offline": "^13.3.2",
+    "typescript": "^5.8.2"
+  }
+}
