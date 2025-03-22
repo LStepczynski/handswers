@@ -9,15 +9,18 @@ provider:
 plugins:
   - serverless-esbuild
   - serverless-offline
+  - serverless-dotenv-plugin
 
 package:
   individually: true
 
 custom:
+  dotenv:
+    path: .env.${opt:stage, 'dev'}
   esbuild:
     bundle: true
-    minify: false
-    sourcemap: true
+    minify: false #Set to true in production
+    sourcemap: true #Set to false in production
     target: node18
     platform: node
     concurrency: 10

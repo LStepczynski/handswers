@@ -5,7 +5,7 @@ export {
   AppError,
 } from "@utils/statusError";
 
-export { errorHandler } from "@utils/middleware";
 export { getUnixTimestamp } from "@utils/getUnixTimestamp";
 export { asyncHandler } from "@utils/asyncHandler";
+export { errorHandler } from "@utils/middleware";
 export { capitalize } from "@utils/capitalize";

@@ -1,8 +1,20 @@
+import Cookies from "js-cookie";
+import { Routes } from "./routes";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/custom/sidebar/app-sidebar";
+
 function App() {
+  const cookieValue = Cookies.get("sidebar_state");
+  const defaultOpen = cookieValue != "false"; // When no cookie is found, the default is open
+
   return (
-    <>
-      <p className="text-red-500">TailwindCSS Test text</p>
-    </>
+    <SidebarProvider defaultOpen={defaultOpen}>
+      <AppSidebar />
+      <main>
+        <SidebarTrigger />
+        <Routes />
+      </main>
+    </SidebarProvider>
   );
 }
 
