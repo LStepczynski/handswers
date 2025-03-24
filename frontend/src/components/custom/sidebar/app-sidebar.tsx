@@ -8,7 +8,15 @@ import {
   Bot,
   CircleHelp,
   LogIn,
+  LogOut,
 } from "lucide-react";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import {
   Sidebar,
@@ -21,6 +29,7 @@ import {
   SidebarMenuItem,
   SidebarHeader,
   SidebarFooter,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 import {
@@ -34,6 +43,8 @@ import { oauthRedirect } from "@/utils/oauthLogin";
 
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { getUser } from "@/utils/getUser";
+import { logOut } from "@/utils/logOut";
 
 // Menu items.
 const accessItems = [
@@ -83,6 +94,10 @@ const aboutItems = [
 ];
 
 export function AppSidebar() {
+  const { isMobile } = useSidebar();
+
+  const user = getUser();
+
   return (
     <Sidebar>
       <SidebarHeader>
@@ -132,25 +147,41 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        {false ? (
-          <div className="m-1 p-2 hover:bg-background rounded-md transition-all flex items-center truncate gap-2">
-            <Avatar>
-              <AvatarImage src="https://github.com/shadcn.png" />
-            </Avatar>
-            <div className="text-sm">
-              <p className="font-semibold">LStepczynski</p>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <p className="text-[12px]">leonstepczynski@gmail.com</p>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="text-[12px]">leonstepczynski@gmail.com</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          </div>
+        {user != undefined ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <div className="m-1 p-2 hover:bg-background rounded-md transition-all flex items-center truncate gap-2">
+                <Avatar>
+                  <AvatarImage
+                    referrerPolicy="no-referrer"
+                    src={user.picture}
+                  />
+                </Avatar>
+                <div className="text-sm">
+                  <p className="font-semibold text-left">{user.name}</p>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <p className="text-[12px]">{user.email}</p>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-[12px]">{user.email}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              side={isMobile ? "bottom" : "right"}
+              className="w-56"
+            >
+              <DropdownMenuItem onClick={logOut}>
+                <LogOut color="red" />
+                <p>Log Out</p>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         ) : (
           <div className="m-2">
             <Button onClick={oauthRedirect()} className=" w-full">

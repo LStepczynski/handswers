@@ -9,11 +9,11 @@ function App() {
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
-      <AppSidebar />
-      <main>
+      <div className="flex absolute top-0 left-0">
+        <AppSidebar />
         <SidebarTrigger />
-        <Routes />
-      </main>
+      </div>
+      <Routes />
     </SidebarProvider>
   );
 }

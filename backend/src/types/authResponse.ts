@@ -1,11 +1,10 @@
 import { ApiResponse } from "@type/apiResponse";
 
-// import { User } from '@type/user';
+import { JwtUser } from "@type/user";
 
 export interface AuthResponse<T> extends ApiResponse<T> {
   status: "success";
   auth: {
-    user: any;
-    // user: Omit<User, 'password'> & { exp: number };
+    user: JwtUser;
   };
 }
