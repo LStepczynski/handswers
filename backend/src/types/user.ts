@@ -12,8 +12,23 @@ export interface JwtUser extends Omit<GoogleUser, "id"> {
 export interface User extends GoogleUser {
   createdAt: number;
 
-  accountStatus: "disabled" | "demo" | "paid";
-  statusExpiration: number;
+  enabled: boolean;
+  accountExpiration: number;
+
+  roles: string[];
+}
+
+export interface DBUser {
+  id: string;
+  email: string;
+
+  type: "student" | "teacher" | "other";
+  school: string;
+
+  createdAt: number;
+
+  enabled: boolean;
+  accountExpiration: number;
 
   roles: string[];
 }

@@ -1,25 +1,66 @@
 import React from "react";
 
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
 export const LoginRedirect = () => {
+  const [loginRes, setLoginRes] = React.useState<null | Record<string, any>>(
+    null
+  );
+
   React.useEffect(() => {
     const userCookie = document.cookie
       .split("; ")
-      .find((c) => c.startsWith("user="));
+      .find((c) => c.startsWith("loginResponse="));
 
     if (userCookie) {
       const cookieValue = decodeURIComponent(userCookie.split("=")[1]);
       try {
         const userData = JSON.parse(cookieValue);
-        localStorage.setItem("user", JSON.stringify(userData));
+        setLoginRes(userData);
 
         document.cookie =
           "user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       } catch (error) {
-        console.error("Invalid JSON in user cookie");
+        setLoginRes({ error: true });
       }
-      window.location.href = "/";
     }
   }, []);
 
-  return <></>;
+  React.useEffect(() => {
+    if (loginRes && loginRes.allowed != false) {
+      localStorage.setItem("user", JSON.stringify(loginRes));
+      window.location.href = "/";
+    }
+  }, [loginRes]);
+
+  if (loginRes == null) {
+    return <></>;
+  }
+
+  return (
+    <AlertDialog open={true}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>A problem occured.</AlertDialogTitle>
+          <AlertDialogDescription>
+            This google account is not registered with Handswers. Please contact
+            your school administrator for help.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => (window.location.href = "/")}>
+            Close
+          </AlertDialogCancel>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 };

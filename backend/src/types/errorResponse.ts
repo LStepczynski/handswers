@@ -1,7 +1,8 @@
-import { ApiResponse } from '@type/apiResponse';
+import { ApiResponse } from "@type/apiResponse";
 
 export interface ErrorResponse extends ApiResponse<null> {
-  status: 'error';
+  status: "error";
   details?: string[];
   stack?: string;
+  originalStack?: any;
 }

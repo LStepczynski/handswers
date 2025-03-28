@@ -1,9 +1,19 @@
-import { asyncHandler, setAuthCookies, UserError } from "@utils/index";
+import {
+  asyncHandler,
+  setAuthCookies,
+  UserError,
+  verifyToken,
+  verifyGoogleToken,
+  generateToken,
+  getUnixTimestamp,
+} from "@utils/index";
 import { Router, Request, Response } from "express";
 
 import dotenv from "dotenv";
-import { verifyGoogleToken } from "@utils/auth/googleAuth";
 import { JwtUser } from "@type/user";
+import { EntityCrud } from "@services/entityCrud";
+import { UserCrud } from "@services/userCrud";
+import { AuthResponse } from "@type/authResponse";
 dotenv.config();
 
 const router = Router();
@@ -33,16 +43,35 @@ router.get(
 
     const payload = (await verifyGoogleToken(id_token)) as any;
 
-    const jwtPayload: JwtUser = {
+    const DBUsers = await UserCrud.getByEmail(payload.email);
+    if (DBUsers.length == 0) {
+      res.cookie("loginResponse", JSON.stringify({ allowed: false }), {
+        httpOnly: false,
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        secure: process.env.NODE_ENV === "production",
+        domain:
+          process.env.NODE_ENV === "production"
+            ? process.env.DOMAIN
+            : undefined,
+        maxAge: 30 * 60 * 1000, // 30 minutes
+      });
+
+      return res.redirect(`${process.env.FRONTEND_URL}/login-redirect`);
+    }
+
+    const jwtPayload: JwtUser & { exp: number } = {
       email: payload.email,
       name: payload.name,
       picture: payload.picture,
-      roles: ["user"],
+      roles: DBUsers[0].roles,
+      exp:
+        getUnixTimestamp() +
+        Number(process.env.JWT_ACCESS_EXPIRATION) * 60 * 60,
     };
 
     setAuthCookies(jwtPayload, res);
 
-    res.cookie("user", JSON.stringify(jwtPayload), {
+    res.cookie("loginResponse", JSON.stringify(jwtPayload), {
       httpOnly: false,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       secure: process.env.NODE_ENV === "production",
@@ -52,6 +81,65 @@ router.get(
     });
 
     res.redirect(`${process.env.FRONTEND_URL}/login-redirect`);
+  })
+);
+
+/**
+ * @route GET auth/refresh
+ * @async
+ *
+ * Endpoint to refresh the user's authentication token.
+ *
+ * @description Verifies the provided refresh token, generates a new authentication token, and sets it in an HTTP-only cookie.
+ *
+ * @throws {UserError} 401 - If the refresh token is missing or invalid.
+ *
+ * @response {200} - Token refresh successful. Returns a new access token and user information.
+ * @response {401} - Missing or invalid refresh token.
+ */
+router.get(
+  "/refresh",
+  asyncHandler(async (req: Request, res: Response) => {
+    // Check for the refresh token
+    if (!req.cookies.refreshToken) {
+      throw new UserError("Missing refresh token.", 401);
+    }
+
+    // remove the `exp` and `iat` properties
+    const payload = verifyToken(req.cookies.refreshToken, true);
+
+    // Generate a new access token
+    const newToken = generateToken(payload);
+
+    // Return the JWT access token in a cookie
+    res.cookie("token", newToken, {
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
+      domain:
+        process.env.NODE_ENV === "production"
+          ? ".projectcatalog.click"
+          : undefined,
+      maxAge: 30 * 60 * 1000,
+    });
+
+    // Return the response
+    const response: AuthResponse<null> = {
+      status: "success",
+      data: null,
+      message: "Token refresh successful.",
+      statusCode: 200,
+      auth: {
+        user: {
+          ...payload,
+          exp:
+            getUnixTimestamp() +
+            Number(process.env.JWT_ACCESS_EXPIRATION) * 60 * 60,
+        },
+      },
+    };
+
+    res.status(response.statusCode).send(response);
   })
 );
 

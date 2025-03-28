@@ -9,6 +9,7 @@ import {
   CircleHelp,
   LogIn,
   LogOut,
+  UserRoundPlus,
 } from "lucide-react";
 
 import {
@@ -93,6 +94,14 @@ const aboutItems = [
   },
 ];
 
+const adminItems = [
+  {
+    title: "Account Management",
+    url: "/admin/account-management/1",
+    icon: UserRoundPlus,
+  },
+];
+
 export function AppSidebar() {
   const { isMobile } = useSidebar();
 
@@ -104,7 +113,7 @@ export function AppSidebar() {
         <div className="flex items-center w-full">
           <img
             className="w-8 h-8 m-2 ml-10"
-            src="handraise.png"
+            src="/handraise.png"
             alt="handswers"
           />
           <h1 className="mt-1 font-semibold text-lg">Handswers!</h1>
@@ -145,6 +154,25 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        {user?.roles.includes("admin") && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {adminItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <a href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
       <SidebarFooter>
         {user != undefined ? (
