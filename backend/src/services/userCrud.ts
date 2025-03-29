@@ -13,7 +13,7 @@ import {
   BatchWriteItemCommand,
 } from "@aws-sdk/client-dynamodb";
 
-import { getUnixTimestamp, InternalError } from "@utils/index";
+import { getUnixTimestamp, InternalError, UserError } from "@utils/index";
 
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { client } from "@database/dynamodb";
@@ -218,17 +218,22 @@ export class UserCrud {
     const params: UpdateItemCommandInput = {
       TableName: this.TABLE_NAME,
       Key: { id: { S: id } },
-      UpdateExpression: updateExpression.slice(0, -1), // Remove trailing comma
+      UpdateExpression: updateExpression.slice(0, -1),
       ExpressionAttributeNames: expressionAttributeNames,
       ExpressionAttributeValues: expressionAttributeValues,
       ReturnValues: "ALL_NEW",
+      ConditionExpression: "attribute_exists(id)",
     };
 
     // Send request
     try {
       const response = await client.send(new UpdateItemCommand(params));
       return unmarshall(response.Attributes!);
-    } catch (err) {
+    } catch (err: any) {
+      if (err.name === "ConditionalCheckFailedException") {
+        throw new UserError("User not found.", 404);
+      }
+
       throw new InternalError(
         "Failed to update the item in the database.",
         500,

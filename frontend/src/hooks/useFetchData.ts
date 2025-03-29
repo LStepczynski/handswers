@@ -8,7 +8,7 @@ export const useFetchData = <T>(
   fetchParams: RequestInit = {},
   cache: boolean = false,
   cacheDuration: number = 360
-): { data: T | null; error: any; isLoading: boolean } => {
+): { data: T | null; error: any; isLoading: boolean; setData: any } => {
   const [data, setData] = React.useState<T | null>(null);
   const [error, setError] = React.useState<any>(null);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
@@ -44,5 +44,5 @@ export const useFetchData = <T>(
     };
   }, [url, ...dependencies]);
 
-  return { data, error, isLoading };
+  return { data, error, isLoading, setData };
 };

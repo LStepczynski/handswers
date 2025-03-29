@@ -11,6 +11,8 @@ import { verifyUsersCreateBody } from "./utils/verifyUsersCreateBody";
 import { v4 as uuid } from "uuid";
 import { UserCrud } from "@services/userCrud";
 import { verifyUsersGetBody } from "./utils/verifyUsersGetBody";
+import { verifyUsersPutBody } from "./utils/verifyUsersPutBody";
+import { verifyUsersDeleteBody } from "./utils/verifyUsersDeleteBody";
 
 const router = Router();
 
@@ -66,6 +68,62 @@ router.get(
       statusCode: 200,
       message: "user objects fetched successfuly",
       data: userResp,
+    };
+
+    res.status(response.statusCode).send(response);
+  })
+);
+
+router.put(
+  "/edit/:id",
+  authenticate(),
+  role(["admin"]),
+  asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.params.id;
+    const enabled = req.body.enabled;
+
+    const { valid, errors } = verifyUsersPutBody({
+      id: userId,
+      enabled: enabled,
+    });
+    if (!valid) {
+      throw new UserError("Invalid request. Missing or invalid fields", 400);
+    }
+
+    await UserCrud.update(userId, { enabled });
+
+    const response: SuccessResponse<null> = {
+      status: "success",
+      statusCode: 200,
+      message: "user object edited successfuly",
+      data: null,
+    };
+
+    res.status(response.statusCode).send(response);
+  })
+);
+
+router.delete(
+  "/delete/:id",
+  authenticate(),
+  role(["admin"]),
+  asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.params.id;
+
+    const { valid, errors } = verifyUsersDeleteBody({
+      id: userId,
+    });
+    if (!valid) {
+      throw new UserError("Invalid request. Missing or invalid fields", 400);
+    }
+
+    await UserCrud.delete(userId);
+
+    const response: SuccessResponse<null> = {
+      status: "success",
+      statusCode: 200,
+      message: "user object deleted successfuly",
+      data: null,
     };
 
     res.status(response.statusCode).send(response);

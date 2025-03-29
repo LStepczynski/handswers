@@ -1,8 +1,7 @@
 import { useParams, useLocation } from "react-router-dom";
 
-import { UsersRound, Settings } from "lucide-react";
+import { UsersRound } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import {
   Pagination,
   PaginationContent,
@@ -13,21 +12,11 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-
 import { getUser } from "@/utils/getUser";
 import { useFetchData } from "@/hooks/useFetchData";
 import { Spinner } from "@/components/custom/spinner";
 import { Separator } from "@/components/ui/separator";
+import { UserTable } from "./userTable";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -52,7 +41,8 @@ export const AccountView = () => {
     window.location.href = "/";
   }
 
-  const { data: users } = useFetchData(
+  // Fetch users for school
+  const { data: users, setData: setUsers } = useFetchData(
     `${backendUrl}/user/get/users/${schoolId}?page=${page}&userType=${userType}`,
     [],
     {},
@@ -76,34 +66,8 @@ export const AccountView = () => {
         <UsersRound className="w-8 h-8" />
       </div>
       <Separator className="mb-6 mt-3" />
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Email</TableHead>
-            <TableHead>Enabled</TableHead>
-            <TableHead>
-              <p className="ml-3">Edit</p>
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {(users as any).map((user: any) => (
-            <TableRow key={user.email}>
-              <TableCell className="font-medium">{user.email}</TableCell>
-              <TableCell>
-                <p className="font-semibold">
-                  {user.enabled ? "True" : "False"}
-                </p>
-              </TableCell>
-              <TableCell>
-                <Button variant="ghost">
-                  <Settings />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      {/* Display users in a table */}
+      <UserTable users={users as Record<string, any>[]} setUsers={setUsers} />
       {/* Pagination */}
       <div>
         <Separator className="mb-10 mt-10" />

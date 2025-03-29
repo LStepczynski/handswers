@@ -44,8 +44,20 @@ router.get(
     const payload = (await verifyGoogleToken(id_token)) as any;
 
     const DBUsers = await UserCrud.getByEmail(payload.email);
-    if (DBUsers.length == 0) {
-      res.cookie("loginResponse", JSON.stringify({ allowed: false }), {
+    if (DBUsers.length != 0 && DBUsers[0].enabled) {
+      const jwtPayload: JwtUser & { exp: number } = {
+        email: payload.email,
+        name: payload.name,
+        picture: payload.picture,
+        roles: DBUsers[0].roles,
+        exp:
+          getUnixTimestamp() +
+          Number(process.env.JWT_ACCESS_EXPIRATION) * 60 * 60,
+      };
+
+      setAuthCookies(jwtPayload, res);
+
+      res.cookie("loginResponse", JSON.stringify(jwtPayload), {
         httpOnly: false,
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         secure: process.env.NODE_ENV === "production",
@@ -57,30 +69,27 @@ router.get(
       });
 
       return res.redirect(`${process.env.FRONTEND_URL}/login-redirect`);
+    } else {
+      res.cookie(
+        "loginResponse",
+        JSON.stringify({
+          registered: DBUsers.length != 0,
+          enabled: DBUsers.length != 0 && DBUsers[0].enabled,
+        }),
+        {
+          httpOnly: false,
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+          secure: process.env.NODE_ENV === "production",
+          domain:
+            process.env.NODE_ENV === "production"
+              ? process.env.DOMAIN
+              : undefined,
+          maxAge: 30 * 60 * 1000, // 30 minutes
+        }
+      );
+
+      return res.redirect(`${process.env.FRONTEND_URL}/login-redirect`);
     }
-
-    const jwtPayload: JwtUser & { exp: number } = {
-      email: payload.email,
-      name: payload.name,
-      picture: payload.picture,
-      roles: DBUsers[0].roles,
-      exp:
-        getUnixTimestamp() +
-        Number(process.env.JWT_ACCESS_EXPIRATION) * 60 * 60,
-    };
-
-    setAuthCookies(jwtPayload, res);
-
-    res.cookie("loginResponse", JSON.stringify(jwtPayload), {
-      httpOnly: false,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production",
-      domain:
-        process.env.NODE_ENV === "production" ? process.env.DOMAIN : undefined,
-      maxAge: 30 * 60 * 1000, // 30 minutes
-    });
-
-    res.redirect(`${process.env.FRONTEND_URL}/login-redirect`);
   })
 );
 
