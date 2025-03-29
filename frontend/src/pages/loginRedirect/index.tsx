@@ -35,7 +35,7 @@ export const LoginRedirect = () => {
   }, []);
 
   React.useEffect(() => {
-    if (loginRes && loginRes.registered && loginRes.enabled) {
+    if (loginRes && !loginRes.unregistered && !loginRes.disabled) {
       localStorage.setItem("user", JSON.stringify(loginRes));
       window.location.href = "/";
     }
@@ -51,7 +51,7 @@ export const LoginRedirect = () => {
         <AlertDialogHeader>
           <AlertDialogTitle>A problem occured.</AlertDialogTitle>
           <AlertDialogDescription>
-            {loginRes.registered
+            {loginRes.disabled
               ? "This Handswers account has been disabled."
               : "This google account is not registered with Handswers."}{" "}
             Please contact your school administrator for help.

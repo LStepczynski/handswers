@@ -73,8 +73,8 @@ router.get(
       res.cookie(
         "loginResponse",
         JSON.stringify({
-          registered: DBUsers.length != 0,
-          enabled: DBUsers.length != 0 && DBUsers[0].enabled,
+          unregistered: DBUsers.length == 0,
+          disabled: DBUsers.length != 0 && !DBUsers[0].enabled,
         }),
         {
           httpOnly: false,
