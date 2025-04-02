@@ -1,14 +1,14 @@
 import { useParams } from "react-router-dom";
-import React from "react";
 
-import { ChevronsUpDown, School, UsersRound, BookOpenText } from "lucide-react";
+import { School, UsersRound, BookOpenText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 import {
   Pagination,
@@ -51,20 +51,6 @@ export const AccountManagement = () => {
     cacheSettings.schoolFetch.duration
   );
 
-  const [openSchools, setOpenSchools] = React.useState<Set<string>>(new Set());
-
-  const toggleSchool = (id: string) => {
-    setOpenSchools((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      return newSet;
-    });
-  };
-
   if (schools == null) {
     return (
       <div className="grid justify-center items-center h-[75%]">
@@ -80,52 +66,46 @@ export const AccountManagement = () => {
       </div>
       <Separator className="mb-6 mt-3" />
       <div className="space-y-2">
-        {(schools as any).map((school: any) => (
-          <Collapsible
-            key={school.id}
-            open={openSchools.has(school.id)}
-            onOpenChange={() => toggleSchool(school.id)}
-          >
-            {/* Trigger for the dropdown */}
-            <CollapsibleTrigger asChild>
-              <Button variant="outline" className="w-full h-16 justify-between">
+        <Accordion type="single" collapsible className="w-full">
+          {(schools as any).map((school: any) => (
+            <AccordionItem value={school.id}>
+              {/* Trigger for the dropdown */}
+              <AccordionTrigger className="h-20">
                 <h4 className="text-lg font-semibold">{school.name}</h4>
-                <ChevronsUpDown />
-              </Button>
-            </CollapsibleTrigger>
-            {/* Content of the dropdown */}
-            <CollapsibleContent className="mt-2 px-4 py-2 bg-muted rounded-md transition-all data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up">
-              {/* Add users button */}
-              <AddUsersButton school={school} />
-              {/* View students button */}
-              <Button
-                onClick={() =>
-                  (window.location.href = `/admin/account-management/${school.id}/1?userType=student&schoolName=${school.name}`)
-                }
-                variant="outline"
-                className="w-full h-12 justify-start"
-              >
-                <UsersRound />
-                View Students
-              </Button>
-              {/* View teachers button */}
-              <Button
-                onClick={() =>
-                  (window.location.href = `/admin/account-management/${school.id}/1?userType=teacher&schoolName=${school.name}`)
-                }
-                variant="outline"
-                className="w-full h-12 justify-start"
-              >
-                <BookOpenText />
-                View Teachers
-              </Button>
-            </CollapsibleContent>
-          </Collapsible>
-        ))}
+              </AccordionTrigger>
+              {/* Content of the dropdown */}
+              <AccordionContent className="mb-6 px-4 py-2 bg-muted rounded-md transition-all data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up">
+                {/* Add users button */}
+                <AddUsersButton school={school} />
+                {/* View students button */}
+                <Button
+                  onClick={() =>
+                    (window.location.href = `/admin/account-management/${school.id}/1?userType=student&schoolName=${school.name}`)
+                  }
+                  variant="outline"
+                  className="w-full h-12 justify-start"
+                >
+                  <UsersRound />
+                  View Students
+                </Button>
+                {/* View teachers button */}
+                <Button
+                  onClick={() =>
+                    (window.location.href = `/admin/account-management/${school.id}/1?userType=teacher&schoolName=${school.name}`)
+                  }
+                  variant="outline"
+                  className="w-full h-12 justify-start"
+                >
+                  <BookOpenText />
+                  View Teachers
+                </Button>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
       </div>
       {/* Pagination */}
-      <div>
-        <Separator className="mb-10 mt-10" />
+      <div className="mt-8">
         <Pagination>
           <PaginationContent>
             {/* Previous Button */}

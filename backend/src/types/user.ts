@@ -5,7 +5,7 @@ export interface GoogleUser {
   picture: string;
 }
 
-export interface JwtUser extends Omit<GoogleUser, "id"> {
+export interface JwtUser extends GoogleUser {
   roles: string[];
 }
 

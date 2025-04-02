@@ -10,6 +10,7 @@ import {
   LogIn,
   LogOut,
   UserRoundPlus,
+  Search,
 } from "lucide-react";
 
 import {
@@ -65,11 +66,6 @@ const accessItems = [
     icon: User,
   },
   {
-    title: "Join",
-    url: "#",
-    icon: SquarePlus,
-  },
-  {
     title: "Settings",
     url: "#",
     icon: Settings,
@@ -102,6 +98,19 @@ const adminItems = [
   },
 ];
 
+const roomItems = [
+  {
+    title: "Join Room",
+    url: "/room/join",
+    icon: Search,
+  },
+  {
+    title: "Create Room",
+    url: "/room/create",
+    icon: SquarePlus,
+  },
+];
+
 export function AppSidebar() {
   const { isMobile } = useSidebar();
 
@@ -120,6 +129,31 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Question Rooms</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {roomItems.map((item) => {
+                if (
+                  !user?.roles.includes("creator") &&
+                  item.title == "Create Room"
+                )
+                  return null;
+
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <a href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
         <SidebarGroup>
           <SidebarGroupLabel>Quick Access</SidebarGroupLabel>
           <SidebarGroupContent>

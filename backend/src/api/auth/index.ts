@@ -46,6 +46,7 @@ router.get(
     const DBUsers = await UserCrud.getByEmail(payload.email);
     if (DBUsers.length != 0 && DBUsers[0].enabled) {
       const jwtPayload: JwtUser & { exp: number } = {
+        id: DBUsers[0].id,
         email: payload.email,
         name: payload.name,
         picture: payload.picture,
