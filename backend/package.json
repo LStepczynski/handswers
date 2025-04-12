@@ -7,6 +7,7 @@
     "dev": "serverless offline",
     "build": "serverless package",
     "docker": "docker-compose -p handswers-backend up",
+    "debug": "node --inspect-brk node_modules/serverless/bin/serverless offline",
     "studio": "npx dynamodb-admin",
     "createTables": "ts-node -r tsconfig-paths/register src/scripts/dynamodbCreateTables.ts",
     "deleteTables": "ts-node -r tsconfig-paths/register src/scripts/dynamodbDeleteTables.ts",
@@ -15,6 +16,7 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.774.0",
     "@aws-sdk/util-dynamodb": "^3.774.0",
+    "@google/genai": "^0.7.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",

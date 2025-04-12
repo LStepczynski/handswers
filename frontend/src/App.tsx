@@ -10,6 +10,7 @@ function App() {
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
+      <div id="alert-popup-root"></div>
       <div className="flex absolute top-0 left-0 z-10">
         <AppSidebar />
         <SidebarTrigger className="w-10 h-10"></SidebarTrigger>

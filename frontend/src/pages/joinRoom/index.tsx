@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import {
   InputOTP,
   InputOTPGroup,
-  InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 
@@ -43,7 +42,7 @@ export const JoinRoom = () => {
     }
 
     if (data.statusCode == 200) {
-      window.location.href = `/room/${roomCode}`;
+      window.location.href = `/room/${data.data.roomUuid}`;
     } else if (data.statusCode == 404) {
       setDialog({
         open: true,
@@ -81,7 +80,7 @@ export const JoinRoom = () => {
       </div>
       <div className="grid justify-center">
         <InputOTP
-          maxLength={6}
+          maxLength={7}
           value={roomCode}
           onChange={(value) => onCodeChange(value)}
         >
@@ -89,18 +88,16 @@ export const JoinRoom = () => {
             <InputOTPSlot className="w-16 h-16" index={0} />
             <InputOTPSlot className="w-16 h-16" index={1} />
             <InputOTPSlot className="w-16 h-16" index={2} />
-          </InputOTPGroup>
-          <InputOTPSeparator />
-          <InputOTPGroup>
             <InputOTPSlot className="w-16 h-16" index={3} />
             <InputOTPSlot className="w-16 h-16" index={4} />
             <InputOTPSlot className="w-16 h-16" index={5} />
+            <InputOTPSlot className="w-16 h-16" index={6} />
           </InputOTPGroup>
         </InputOTP>
       </div>
       <div>
         <Button
-          disabled={roomCode.length != 6 || loading}
+          disabled={roomCode.length != 7 || loading}
           className="w-full font-bold"
           onClick={onCodeSubmit}
         >

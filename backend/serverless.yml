@@ -4,6 +4,7 @@ frameworkVersion: "3"
 
 provider:
   name: aws
+  timeout: 600
   runtime: nodejs18.x
 
 plugins:

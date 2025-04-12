@@ -11,6 +11,7 @@ import {
   LogOut,
   UserRoundPlus,
   Search,
+  History,
 } from "lucide-react";
 
 import {
@@ -52,7 +53,7 @@ import { logOut } from "@/utils/logOut";
 const accessItems = [
   {
     title: "Home",
-    url: "#",
+    url: "/",
     icon: Home,
   },
   {
@@ -109,6 +110,11 @@ const roomItems = [
     url: "/room/create",
     icon: SquarePlus,
   },
+  {
+    title: "Room History",
+    url: "/room/history/1",
+    icon: History,
+  },
 ];
 
 export function AppSidebar() {
@@ -136,7 +142,7 @@ export function AppSidebar() {
               {roomItems.map((item) => {
                 if (
                   !user?.roles.includes("creator") &&
-                  item.title == "Create Room"
+                  item.title != "Join Room"
                 )
                   return null;
 

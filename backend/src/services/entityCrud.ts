@@ -9,6 +9,8 @@ import {
   DeleteItemCommandInput,
   DeleteItemCommand,
   QueryCommandInput,
+  BatchWriteItemCommandInput,
+  BatchWriteItemCommand,
 } from "@aws-sdk/client-dynamodb";
 
 import { getUnixTimestamp, InternalError } from "@utils/index";
@@ -64,39 +66,55 @@ export class EntityCrud {
    * Queries the DynamoDB table for multiple entities based on the provided query parameters.
    *
    * @param params - The query parameters to execute the DynamoDB query.
+   * @param page
+   * @param limit - How many items are returned
    *
    * @returns A promise that resolves to an array of objects matching the query conditions.
    *          Returns an empty array if no entities are found.
    * @throws InternalError - If an unexpected issue occurs during the query execution.
    */
   public static async query(
-    params: Partial<QueryCommandInput>
+    params: Partial<QueryCommandInput>,
+    page: number = 1,
+    limit: number = 15
   ): Promise<Record<string, any>[]> {
-    // Add the table name to the params
-    const completeParams: QueryCommandInput = {
-      TableName: this.TABLE_NAME,
-      ...params,
-    };
+    let lastEvaluatedKey: Record<string, any> | undefined = undefined;
+    let currentPage = 1;
+    let items: Record<string, any>[] = [];
 
-    try {
-      const resp = await client.send(new QueryCommand(completeParams));
+    while (currentPage <= page) {
+      // Add the table name to the params
+      const completeParams: QueryCommandInput = {
+        TableName: this.TABLE_NAME,
+        Limit: limit,
+        ExclusiveStartKey: lastEvaluatedKey,
+        ...params,
+      };
 
-      // Return the objects
-      if (resp.Items && resp.Items.length > 0) {
-        return resp.Items.map((item) => unmarshall(item));
+      try {
+        const resp = await client.send(new QueryCommand(completeParams));
+
+        // Return the objects
+        if (currentPage === page) {
+          items = resp.Items?.map((item: any) => unmarshall(item)) || [];
+        }
+
+        lastEvaluatedKey = resp.LastEvaluatedKey;
+        currentPage++;
+
+        if (!lastEvaluatedKey) break; // No more pages
+      } catch (err) {
+        // Throw an internal error if there was an unexpected problem
+        throw new InternalError(
+          "Error while fetching the objects from the database",
+          500,
+          ["queryEntities"],
+          err
+        );
       }
-
-      // Return an empty array if no entities found
-      return [];
-    } catch (err) {
-      // Throw an internal error if there was an unexpected problem
-      throw new InternalError(
-        "Error while fetching the objects from the database",
-        500,
-        ["queryEntities"],
-        err
-      );
     }
+
+    return items;
   }
 
   /**
@@ -146,6 +164,7 @@ export class EntityCrud {
       ExpressionAttributeNames: expressionAttributeNames,
       ExpressionAttributeValues: expressionAttributeValues,
       ReturnValues: "ALL_NEW",
+      ConditionExpression: "attribute_exists(PK)",
     };
 
     // Send request
@@ -234,6 +253,72 @@ export class EntityCrud {
         ["deleteEntity"],
         err
       );
+    }
+  }
+
+  public static async batchDelete(
+    keys: { PK: string; SK: string }[]
+  ): Promise<void> {
+    const MAX_BATCH_SIZE = 25;
+    const MAX_RETRIES = 5;
+    const INITIAL_DELAY_MS = 100; // starting delay in milliseconds
+
+    // Process keys in chunks of 25
+    for (let i = 0; i < keys.length; i += MAX_BATCH_SIZE) {
+      let chunk = keys.slice(i, i + MAX_BATCH_SIZE);
+      let retries = 0;
+      let unprocessed: any[] = [];
+
+      do {
+        // Map the chunk to delete requests
+        const requestItems = chunk.map((key) => ({
+          DeleteRequest: {
+            Key: {
+              PK: { S: key.PK },
+              SK: { S: key.SK },
+            },
+          },
+        }));
+
+        const params: BatchWriteItemCommandInput = {
+          RequestItems: {
+            [this.TABLE_NAME]: requestItems,
+          },
+        };
+
+        try {
+          const response = await client.send(new BatchWriteItemCommand(params));
+          // Check for unprocessed items in the response
+          unprocessed = response.UnprocessedItems?.[this.TABLE_NAME] || [];
+
+          if (unprocessed.length > 0) {
+            // Prepare the keys for the next retry from unprocessed items
+            chunk = unprocessed.map((item: any) => {
+              const key = item.DeleteRequest.Key;
+              return { PK: key.PK.S, SK: key.SK.S };
+            });
+            retries++;
+            // Exponential backoff delay
+            const delayTime = INITIAL_DELAY_MS * Math.pow(2, retries);
+            await new Promise((resolve) => setTimeout(resolve, delayTime));
+          } else {
+            break; // All items processed successfully
+          }
+        } catch (err) {
+          throw new InternalError(
+            "Error while batch deleting from the database",
+            500,
+            ["batchDeleteEntities"],
+            err
+          );
+        }
+      } while (retries < MAX_RETRIES);
+
+      if (unprocessed.length > 0) {
+        console.warn(
+          `Batch delete: ${unprocessed.length} items failed to delete after ${MAX_RETRIES} retries.`
+        );
+      }
     }
   }
 }

@@ -46,12 +46,13 @@ export const StudentViewRoom = () => {
     const data = await fetchWrapper(`${backendUrl}/room/question/create`, {
       method: "POST",
       body: JSON.stringify({
-        roomId: Number(roomId) || -1,
+        roomId: roomId || "",
         question: form.question,
       }),
     });
 
     if (data.statusCode == 200) {
+      window.location.href = `/chat/${roomId}/${data.data.id}?timestamp=${data.data.timestamp}`;
       setDialog({
         open: true,
         title: "Question Submited!",

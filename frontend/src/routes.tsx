@@ -8,6 +8,8 @@ import { JoinRoom } from "./pages/joinRoom";
 import { CreateRoom } from "./pages/createRoom";
 import { StudentViewRoom } from "./pages/studentViewRoom";
 import { TeacherViewRoom } from "./pages/teacherViewRoom";
+import { RoomHistory } from "./pages/roomHistory";
+import { ChatRoom } from "./pages/chatRoom";
 
 export const Routes = () => {
   const router = createBrowserRouter([
@@ -36,12 +38,20 @@ export const Routes = () => {
       element: <CreateRoom />,
     },
     {
+      path: "/room/history/:page",
+      element: <RoomHistory />,
+    },
+    {
       path: "/room/:roomId",
       element: <StudentViewRoom />,
     },
     {
-      path: "/room/:roomId/teacher",
+      path: "/room/:roomId/teacher/:page",
       element: <TeacherViewRoom />,
+    },
+    {
+      path: "/chat/:roomId/:questionId",
+      element: <ChatRoom />,
     },
   ]);
 

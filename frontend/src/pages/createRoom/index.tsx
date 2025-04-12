@@ -17,6 +17,10 @@ import { getUser } from "@/utils/getUser";
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 export const CreateRoom = () => {
+  const [dialog, setDialog] = React.useState({
+    title: "",
+    description: "",
+  });
   const [open, setOpen] = React.useState(false);
 
   const user = getUser();
@@ -31,8 +35,20 @@ export const CreateRoom = () => {
       });
 
       if (data.statusCode == 200) {
-        return (window.location.href = `/room/${data.data}/teacher`);
+        return (window.location.href = `/room/${data.data.roomUuid}/teacher/1?roomCode=${data.data.roomId}`);
+      } else if (data.statusCode == 403) {
+        setDialog({
+          title: "Too many rooms",
+          description:
+            "You already have an active room. Close it to create a new one.",
+        });
+        setOpen(true);
       } else {
+        setDialog({
+          title: "Error!",
+          description:
+            "An error occured while creating the question room. Please try again later.",
+        });
         setOpen(true);
       }
     };
@@ -53,10 +69,9 @@ export const CreateRoom = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Error!</AlertDialogTitle>
+            <AlertDialogTitle>{dialog.title}</AlertDialogTitle>
             <AlertDialogDescription>
-              An error occured while creating the question room. Please try
-              again later.
+              {dialog.description}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

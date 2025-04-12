@@ -123,16 +123,25 @@ export class UserCrud {
         ExclusiveStartKey: lastEvaluatedKey,
       };
 
-      const resp = await client.send(new QueryCommand(params));
+      try {
+        const resp = await client.send(new QueryCommand(params));
 
-      if (currentPage === page) {
-        items = resp.Items?.map((item: any) => unmarshall(item)) || [];
+        if (currentPage === page) {
+          items = resp.Items?.map((item: any) => unmarshall(item)) || [];
+        }
+
+        lastEvaluatedKey = resp.LastEvaluatedKey;
+        currentPage++;
+
+        if (!lastEvaluatedKey) break; // No more pages
+      } catch (err: any) {
+        throw new InternalError(
+          "Error while fetching the objects from the database",
+          500,
+          ["getBySchoolAndType"],
+          err
+        );
       }
-
-      lastEvaluatedKey = resp.LastEvaluatedKey;
-      currentPage++;
-
-      if (!lastEvaluatedKey) break; // No more pages
     }
 
     return items;

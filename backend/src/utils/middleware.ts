@@ -64,7 +64,9 @@ export const errorHandler = (
       "Error:",
       isAppError ? err.message : "",
       `Error Stack: ${err.stack}`,
-      (err as AppError)?.details ?? []
+      (err as AppError)?.details ?? [],
+      "\nOG stack: ",
+      resp.originalStack
     );
   }
 

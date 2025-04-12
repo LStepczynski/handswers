@@ -118,6 +118,14 @@ router.get(
     // remove the `exp` and `iat` properties
     const payload = verifyToken(req.cookies.refreshToken, true);
 
+    const dbUser = await UserCrud.getById(payload.id);
+    if (dbUser == null) {
+      throw new UserError("User not found.", 404);
+    }
+    if (!dbUser.enabled) {
+      throw new UserError("Account disabled.", 403);
+    }
+
     // Generate a new access token
     const newToken = generateToken(payload);
 
