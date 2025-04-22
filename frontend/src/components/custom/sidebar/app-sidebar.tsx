@@ -49,30 +49,6 @@ import { Button } from "@/components/ui/button";
 import { getUser } from "@/utils/getUser";
 import { logOut } from "@/utils/logOut";
 
-// Menu items.
-const accessItems = [
-  {
-    title: "Home",
-    url: "/",
-    icon: Home,
-  },
-  {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
-  },
-  {
-    title: "Account",
-    url: "#",
-    icon: User,
-  },
-  {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
-  },
-];
-
 const aboutItems = [
   {
     title: "General",
@@ -99,7 +75,7 @@ const adminItems = [
   },
 ];
 
-const roomItems = [
+const generalItems = [
   {
     title: "Join Room",
     url: "/room/join",
@@ -114,6 +90,11 @@ const roomItems = [
     title: "Room History",
     url: "/room/history/1",
     icon: History,
+  },
+  {
+    title: "Home",
+    url: "/",
+    icon: Home,
   },
 ];
 
@@ -136,10 +117,10 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Question Rooms</SidebarGroupLabel>
+          <SidebarGroupLabel>General</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {roomItems.map((item) => {
+              {generalItems.map((item) => {
                 if (
                   !user?.roles.includes("creator") &&
                   item.title != "Join Room"
@@ -157,23 +138,6 @@ export function AppSidebar() {
                   </SidebarMenuItem>
                 );
               })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel>Quick Access</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {accessItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

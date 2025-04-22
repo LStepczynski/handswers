@@ -13,6 +13,18 @@ import {
 import { Spinner } from "@/components/custom/spinner";
 import { fetchWrapper } from "@/utils/fetchWrapper";
 import { getUser } from "@/utils/getUser";
+import { useBreadcrumbs } from "@/components/custom/navBreadcrumbs/breadcrumbProvider";
+
+const breadcrumbs = [
+  {
+    label: "Room",
+    link: "#",
+  },
+  {
+    label: "Create",
+    link: "#",
+  },
+];
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -23,9 +35,16 @@ export const CreateRoom = () => {
   });
   const [open, setOpen] = React.useState(false);
 
+  // Set breadcrumbs
+  const { setBreadcrumbs } = useBreadcrumbs();
+  React.useEffect(() => {
+    setBreadcrumbs(breadcrumbs);
+  }, []);
+
   const user = getUser();
   if (!user?.roles.includes("creator")) {
     window.location.href = "/";
+    return null;
   }
 
   React.useEffect(() => {

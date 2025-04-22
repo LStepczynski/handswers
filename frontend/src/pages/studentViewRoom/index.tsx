@@ -15,6 +15,19 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/custom/spinner";
 import { fetchWrapper } from "@/utils/fetchWrapper";
+import { getUser } from "@/utils/getUser";
+import { useBreadcrumbs } from "@/components/custom/navBreadcrumbs/breadcrumbProvider";
+
+const breadcrumbs = [
+  {
+    label: "Room",
+    link: "#",
+  },
+  {
+    label: "Question",
+    link: "#",
+  },
+];
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -30,6 +43,18 @@ export const StudentViewRoom = () => {
     title: "",
     description: "",
   });
+
+  // Set breadcrumbs
+  const { setBreadcrumbs } = useBreadcrumbs();
+  React.useEffect(() => {
+    setBreadcrumbs(breadcrumbs);
+  }, []);
+
+  const user = getUser();
+  if (user == undefined) {
+    window.location.href = "/";
+    return null;
+  }
 
   const roomId = useParams().roomId;
 
@@ -83,10 +108,10 @@ export const StudentViewRoom = () => {
     <>
       <div className="grid justify-center mt-[15%] gap-6">
         <div>
-          <h4 className="text-5xl font-semibold text-center mb-4">
+          <h4 className="text-4xl sm:text-5xl font-semibold text-center mb-4">
             Ask Questions!
           </h4>
-          <p className="text-xl text-center">
+          <p className="text-lg sm:text-xl text-center">
             This question room was created to help you with your lesson.
           </p>
         </div>

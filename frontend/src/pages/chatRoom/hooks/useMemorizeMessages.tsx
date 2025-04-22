@@ -25,34 +25,51 @@ const markdownComponents = {
         </SyntaxHighlighter>
       </div>
     ) : (
-      <code {...rest} className={`${className} bg-muted p-[0.2rem] rounded-md`}>
+      <code
+        {...rest}
+        className={`${className} bg-muted p-[0.2rem] rounded-md text-sm sm:text-md`}
+      >
         {children}
       </code>
     );
   },
   p({ children }: any) {
-    return <p className="leading-loose">{children}</p>;
+    return <p className="leading-loose text-sm sm:text-md">{children}</p>;
   },
   ul({ children }: any) {
-    return <ul className="list-disc pl-5 space-y-2">{children}</ul>;
+    return (
+      <ul className="list-disc pl-5 space-y-2 text-sm sm:text-md">
+        {children}
+      </ul>
+    );
   },
   ol({ children }: any) {
-    return <ul className="list-decimal pl-5 space-y-1">{children}</ul>;
+    return (
+      <ul className="list-decimal pl-5 space-y-1 text-sm sm:text-md">
+        {children}
+      </ul>
+    );
   },
   li({ children }: any) {
-    return <li className="leading-loose">{children}</li>;
+    return <li className="leading-loose text-sm sm:text-md">{children}</li>;
   },
   strong({ children }: any) {
     return (
-      <strong className="font-semibold text-foreground">{children}</strong>
+      <strong className="font-semibold text-foreground text-sm sm:text-md">
+        {children}
+      </strong>
     );
   },
   em({ children }: any) {
-    return <em className="italic text-muted-foreground">{children}</em>;
+    return (
+      <em className="italic text-muted-foreground text-sm sm:text-md">
+        {children}
+      </em>
+    );
   },
   blockquote({ children }: any) {
     return (
-      <blockquote className="border-l-4 border-muted pl-4 italic text-muted-foreground">
+      <blockquote className="border-l-4 border-muted pl-4 italic text-muted-foreground text-sm sm:text-md">
         {children}
       </blockquote>
     );
@@ -66,7 +83,7 @@ export const useMemorizeMessages = (messages: Record<string, any>[]) => {
         return (
           <div className="w-full my-8 flex justify-end" key={index}>
             <div className="bg-muted p-3 rounded-md mr-4">
-              <p>{message.content}</p>
+              <p className="text-sm sm:text-md">{message.content}</p>
             </div>
           </div>
         );

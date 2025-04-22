@@ -31,7 +31,20 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { fetchWrapper } from "@/utils/fetchWrapper";
 
+import { useBreadcrumbs } from "@/components/custom/navBreadcrumbs/breadcrumbProvider";
+
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+const breadcrumbs = [
+  {
+    label: "Room",
+    link: "#",
+  },
+  {
+    label: "History",
+    link: "#",
+  },
+];
 
 export const RoomHistory = () => {
   const [dialog, setDialog] = React.useState({
@@ -44,9 +57,16 @@ export const RoomHistory = () => {
     onAction: null as any,
   });
 
+  // Set breadcrumbs
+  const { setBreadcrumbs } = useBreadcrumbs();
+  React.useEffect(() => {
+    setBreadcrumbs(breadcrumbs);
+  }, []);
+
   const user = getUser();
   if (user == undefined || !user.roles.includes("creator")) {
     window.location.href = "/";
+    return null;
   }
 
   const page = Number(useParams().page) || 1;
@@ -139,7 +159,9 @@ export const RoomHistory = () => {
     <>
       <div className="mt-16">
         <div className="flex justify-between items-center mx-3">
-          <h1 className="text-3xl font-semibold">Question Room History</h1>
+          <h1 className="text-2xl xs:text-3xl font-semibold">
+            Question Room History
+          </h1>
         </div>
         <Separator className="my-4" />
         <div className="grid gap-2">
@@ -150,10 +172,8 @@ export const RoomHistory = () => {
                 variant={room.active ? "default" : "secondary"}
               >
                 <div className="w-full underline flex justify-between items-center">
-                  <a
-                    href={`/room/${room.roomId}/teacher/1?roomCode=${room.roomCode}&active=${room.active}`}
-                  >
-                    Question Room - {formatTimestamp(room.createdAt)}
+                  <a href={`/room/${room.roomId}/teacher/1`}>
+                    Room - {formatTimestamp(room.createdAt)}
                     {room.active && " - (Active)"}
                   </a>
                   <Button

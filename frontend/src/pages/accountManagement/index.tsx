@@ -1,3 +1,4 @@
+import React from "react";
 import { useParams } from "react-router-dom";
 
 import { School, UsersRound, BookOpenText } from "lucide-react";
@@ -25,6 +26,7 @@ import { useFetchData } from "@/hooks/useFetchData";
 import { Separator } from "@/components/ui/separator";
 import { AddUsersButton } from "./addUsersButton";
 import { getUser } from "@/utils/getUser";
+import { useBreadcrumbs } from "@/components/custom/navBreadcrumbs/breadcrumbProvider";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -35,12 +37,30 @@ const cacheSettings = {
   },
 };
 
+const breadcrumbs = [
+  {
+    label: "Admin",
+    link: "#",
+  },
+  {
+    label: "Accounts",
+    link: "#",
+  },
+];
+
 export const AccountManagement = () => {
   const page = Number(useParams().page);
+
+  // Set breadcrumbs
+  const { setBreadcrumbs } = useBreadcrumbs();
+  React.useEffect(() => {
+    setBreadcrumbs(breadcrumbs);
+  }, []);
 
   const user = getUser();
   if (!user || !user.roles.includes("admin")) {
     window.location.href = "/";
+    return null;
   }
 
   const { data: schools } = useFetchData(

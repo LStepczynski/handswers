@@ -1,7 +1,14 @@
 import React from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
-import { Settings, Trash2, UserPen, MessageSquare } from "lucide-react";
+import {
+  Settings,
+  Trash2,
+  UserPen,
+  MessageSquare,
+  EyeOff,
+  OctagonAlert,
+} from "lucide-react";
 
 import {
   Accordion,
@@ -32,6 +39,13 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -46,11 +60,30 @@ import { Separator } from "@/components/ui/separator";
 import { fetchWrapper } from "@/utils/fetchWrapper";
 import { truncateString } from "@/utils/truncateString";
 import { getUser } from "@/utils/getUser";
+import { useBreadcrumbs } from "@/components/custom/navBreadcrumbs/breadcrumbProvider";
+
+const breadcrumbs = [
+  {
+    label: "Room",
+    link: "#",
+  },
+  {
+    label: "View",
+    link: "#",
+  },
+];
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 export const TeacherViewRoom = () => {
-  const [data, setData] = React.useState<Record<any, string>[] | null>(null);
+  const [messageData, setMessageData] = React.useState<
+    Record<any, string>[] | null
+  >(null);
+  const [roomData, setRoomData] = React.useState({
+    active: true,
+    createdAt: 0,
+    roomCode: "",
+  });
   const [dialog, setDialog] = React.useState({
     open: false,
     anonymous: false,
@@ -63,35 +96,41 @@ export const TeacherViewRoom = () => {
     onAction: null as any,
     closeBtn: null as null | string,
   });
+  const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
+
+  // Set breadcrumbs
+  const { setBreadcrumbs } = useBreadcrumbs();
+  React.useEffect(() => {
+    setBreadcrumbs(breadcrumbs);
+  }, []);
 
   const user = getUser();
   if (!user || !user.roles.includes("creator")) {
     window.location.href = "/";
+    return null;
   }
 
   const roomId = useParams().roomId;
   const page = Number(useParams().page) || 1;
-  const active = new URLSearchParams(useLocation().search).get("active");
-  const roomCode = new URLSearchParams(useLocation().search).get("roomCode");
 
   React.useEffect(() => {
     const controller = new AbortController();
 
     const fetchData = async () => {
       if (controller.signal.aborted) return;
+      if (!roomData.active) return;
 
       try {
         const data = await fetchWrapper(
           `${backendUrl}/room/get/${roomId}/${page}`,
           {
             signal: controller.signal,
-          },
-          active == "false",
-          5 * 60
+          }
         );
 
         if (data.statusCode == 200) {
-          setData(data.data);
+          setMessageData(data.data.questionData);
+          setRoomData(data.data.roomData);
         } else if (data.statusCode == 404) {
           setAlertDialog({
             open: true,
@@ -119,10 +158,7 @@ export const TeacherViewRoom = () => {
     };
 
     fetchData(); // initial fetch
-    let intervalId: any;
-    if (active != "false") {
-      intervalId = setInterval(fetchData, 20 * 1000); //Update frequency
-    }
+    const intervalId = setInterval(fetchData, 20 * 1000); //Update frequency
     return () => {
       controller.abort();
       if (intervalId) {
@@ -154,6 +190,20 @@ export const TeacherViewRoom = () => {
     }
   };
 
+  React.useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    handleResize();
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   return (
     <>
       <Dialog
@@ -181,7 +231,7 @@ export const TeacherViewRoom = () => {
               <p>Anonymous Users</p>
             </div>
             <Separator className="my-4" />
-            {active != "false" && (
+            {roomData.active && (
               <div className="flex gap-2 items-center">
                 <Button
                   variant="destructive"
@@ -217,7 +267,9 @@ export const TeacherViewRoom = () => {
       </Dialog>
       <div className="mt-16">
         <div className="flex justify-between items-center mx-3">
-          <h1 className="text-3xl font-semibold">Question Room {roomCode}</h1>
+          <h1 className="text-3xl font-semibold">
+            Question Room {roomData.roomCode}
+          </h1>
           <Button
             variant="secondary"
             onClick={() => setDialog((prev: any) => ({ ...prev, open: true }))}
@@ -226,14 +278,46 @@ export const TeacherViewRoom = () => {
           </Button>
         </div>
         <Separator className="my-4" />
-        {data && data.length != 0 ? (
+        {messageData && messageData.length != 0 ? (
           <Accordion type="single" collapsible className="w-full">
-            {data.map((question: any) => {
-              if (!question.active) return null;
+            {messageData.map((question: any) => {
               return (
                 <AccordionItem value={question.createdAt}>
                   <AccordionTrigger>
-                    {truncateString(question.content, 50)}
+                    <div className="w-full flex justify-between relative">
+                      <p className={question.active ? "" : "opacity-40"}>
+                        {truncateString(
+                          question.content,
+                          windowWidth > 540 ? 50 : 35
+                        )}
+                      </p>
+                      <div className="mr-4 gap-4 flex absolute right-0 top-0">
+                        {!question.active && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <EyeOff />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Question was closed by the user.</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                        {question.needTeacher && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <OctagonAlert color="orange" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>User requested help.</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                      </div>
+                    </div>
                   </AccordionTrigger>
                   <AccordionContent>
                     <div className="bg-secondary rounded-md p-3">
@@ -242,11 +326,16 @@ export const TeacherViewRoom = () => {
                           <UserPen className="w-7 h-7" />
                           <p>{" : "}</p>
                           <p className="text-lg">
-                            {dialog.anonymous ? "Anonymous" : question.author}
+                            {dialog.anonymous
+                              ? "Anonymous"
+                              : truncateString(
+                                  question.author,
+                                  windowWidth > 400 ? 40 : 20
+                                )}
                           </p>
                         </div>
                         <a
-                          href={`/chat/${roomId}/${question.questionId}?timestamp=${question.createdAt}`}
+                          href={`/chat/${roomId}/${question.questionId}?timestamp=${question.createdAt}&isTeacher=true`}
                         >
                           <Button>
                             <MessageSquare />
@@ -264,7 +353,7 @@ export const TeacherViewRoom = () => {
         ) : (
           <div className="w-full flex justify-center mt-16">
             <h4 className="text-2xl font-semibold">
-              No questions {active != "false" ? "posted yet" : "found"} ...
+              No questions {roomData.active ? "posted yet" : "found"} ...
             </h4>
           </div>
         )}
@@ -280,9 +369,7 @@ export const TeacherViewRoom = () => {
               />
             ) : (
               <PaginationPrevious
-                href={`/room/${roomId}/teacher/${
-                  page - 1
-                }?roomCode=${roomCode}&active=${active}`}
+                href={`/room/${roomId}/teacher/${page - 1}`}
               />
             )}
           </PaginationItem>
@@ -290,9 +377,7 @@ export const TeacherViewRoom = () => {
           {/* First Page */}
           {page !== 1 && (
             <PaginationItem>
-              <PaginationLink
-                href={`/room/${roomId}/teacher/1?roomCode=${roomCode}&active=${active}`}
-              >
+              <PaginationLink href={`/room/${roomId}/teacher/1`}>
                 1
               </PaginationLink>
             </PaginationItem>
@@ -310,17 +395,13 @@ export const TeacherViewRoom = () => {
 
           {/* Next Button */}
           <PaginationItem>
-            {data && data.length < 15 ? (
+            {messageData && messageData.length < 15 ? (
               <PaginationNext
                 aria-disabled="true"
                 className="pointer-events-none opacity-50"
               />
             ) : (
-              <PaginationNext
-                href={`/room/${roomId}/teacher/${
-                  page + 1
-                }?roomCode=${roomCode}&active=${active}`}
-              />
+              <PaginationNext href={`/room/${roomId}/teacher/${page + 1}`} />
             )}
           </PaginationItem>
         </PaginationContent>

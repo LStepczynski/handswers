@@ -18,6 +18,19 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Spinner } from "@/components/custom/spinner";
 import { fetchWrapper } from "@/utils/fetchWrapper";
+import { getUser } from "@/utils/getUser";
+import { useBreadcrumbs } from "@/components/custom/navBreadcrumbs/breadcrumbProvider";
+
+const breadcrumbs = [
+  {
+    label: "Room",
+    link: "#",
+  },
+  {
+    label: "Join",
+    link: "#",
+  },
+];
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -30,6 +43,18 @@ export const JoinRoom = () => {
   const [loading, setLoading] = React.useState(false);
   const [roomCode, setRoomCode] = React.useState("");
   const [lastCode, setLastCode] = React.useState("");
+
+  // Set breadcrumbs
+  const { setBreadcrumbs } = useBreadcrumbs();
+  React.useEffect(() => {
+    setBreadcrumbs(breadcrumbs);
+  }, []);
+
+  const user = getUser();
+  if (user == undefined) {
+    window.location.href = "/";
+    return null;
+  }
 
   const onCodeSubmit = async () => {
     setLoading(true);
@@ -72,9 +97,11 @@ export const JoinRoom = () => {
 
   return (
     <div className="grid justify-center gap-8 mt-[15%]">
-      <div>
-        <h1 className="text-4xl text-center font-semibold mb-2">Join a Room</h1>
-        <h4 className="text-xl text center">
+      <div className="w-full">
+        <h1 className="text-2xl sm:text-4xl text-center font-semibold mb-2">
+          Join a Room
+        </h1>
+        <h4 className="sm:text-xl text-center">
           Enter the room code provided by your teacher.
         </h4>
       </div>
@@ -85,17 +112,17 @@ export const JoinRoom = () => {
           onChange={(value) => onCodeChange(value)}
         >
           <InputOTPGroup>
-            <InputOTPSlot className="w-16 h-16" index={0} />
-            <InputOTPSlot className="w-16 h-16" index={1} />
-            <InputOTPSlot className="w-16 h-16" index={2} />
-            <InputOTPSlot className="w-16 h-16" index={3} />
-            <InputOTPSlot className="w-16 h-16" index={4} />
-            <InputOTPSlot className="w-16 h-16" index={5} />
-            <InputOTPSlot className="w-16 h-16" index={6} />
+            <InputOTPSlot className="w-10 sm:w-16 h-10 sm:h-16" index={0} />
+            <InputOTPSlot className="w-10 sm:w-16 h-10 sm:h-16" index={1} />
+            <InputOTPSlot className="w-10 sm:w-16 h-10 sm:h-16" index={2} />
+            <InputOTPSlot className="w-10 sm:w-16 h-10 sm:h-16" index={3} />
+            <InputOTPSlot className="w-10 sm:w-16 h-10 sm:h-16" index={4} />
+            <InputOTPSlot className="w-10 sm:w-16 h-10 sm:h-16" index={5} />
+            <InputOTPSlot className="w-10 sm:w-16 h-10 sm:h-16" index={6} />
           </InputOTPGroup>
         </InputOTP>
       </div>
-      <div>
+      <div className="w-full">
         <Button
           disabled={roomCode.length != 7 || loading}
           className="w-full font-bold"

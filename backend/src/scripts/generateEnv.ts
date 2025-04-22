@@ -47,6 +47,10 @@ const fields = [
     name: "DOMAIN",
     description: "The domain of the website. (ex. '.futureDomain.com')",
   },
+  {
+    name: "GEMINI_API_KEY",
+    description: "The API key for Gemini AI.",
+  },
 ];
 
 (async () => {

@@ -1,3 +1,4 @@
+import React from "react";
 import { useParams, useLocation } from "react-router-dom";
 
 import { UsersRound } from "lucide-react";
@@ -17,6 +18,7 @@ import { useFetchData } from "@/hooks/useFetchData";
 import { Spinner } from "@/components/custom/spinner";
 import { Separator } from "@/components/ui/separator";
 import { UserTable } from "./userTable";
+import { useBreadcrumbs } from "@/components/custom/navBreadcrumbs/breadcrumbProvider";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -27,10 +29,27 @@ const cacheSettings = {
   },
 };
 
+const breadcrumbs = [
+  {
+    label: "Accounts",
+    link: "/admin/account-management/1",
+  },
+  {
+    label: "View",
+    link: "#",
+  },
+];
+
 export const AccountView = () => {
   const pageParams = useParams();
   const page = Number(pageParams.page);
   const schoolId = pageParams.schoolId;
+
+  // Set breadcrumbs
+  const { setBreadcrumbs } = useBreadcrumbs();
+  React.useEffect(() => {
+    setBreadcrumbs(breadcrumbs);
+  }, []);
 
   const { search } = useLocation();
   const userType = new URLSearchParams(search).get("userType");
@@ -39,6 +58,7 @@ export const AccountView = () => {
   const user = getUser();
   if (!user || !user.roles.includes("admin")) {
     window.location.href = "/";
+    return null;
   }
 
   // Fetch users for school

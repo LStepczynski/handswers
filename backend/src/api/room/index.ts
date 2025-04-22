@@ -53,7 +53,6 @@ router.get(
   })
 );
 
-// Verify if the user owns the room
 router.get(
   "/get/:roomUuid/:page",
   authenticate(),
@@ -65,6 +64,11 @@ router.get(
       throw new UserError("Invalid page value");
     }
     if (!isUuid(roomUuid)) {
+      throw new UserError("Room not found", 404);
+    }
+
+    const room = await EntityCrud.get(`ROOM#${roomUuid}`, `ROOM#${roomUuid}`);
+    if (room == null || room.teacherId != req.user.id) {
       throw new UserError("Room not found", 404);
     }
 
@@ -80,7 +84,13 @@ router.get(
       page
     );
 
-    const data = questions.map((question: any) => ({
+    const roomData = {
+      active: room.active == "true",
+      createdAt: room.createdAt,
+      roomCode: room.roomCode,
+    };
+
+    const questionData = questions.map((question: any) => ({
       createdAtMs: question.SK.slice(9, 22),
       questionId: question.SK.slice(23),
       createdAt: question.createdAt,
@@ -88,13 +98,14 @@ router.get(
       roomId: question.PK.slice(5),
       author: question.author,
       content: question.content,
+      needTeacher: question.needTeacher == "true",
     }));
 
-    const response: SuccessResponse<Record<string, any>[]> = {
+    const response: SuccessResponse<Record<string, any>> = {
       status: "success",
       statusCode: 200,
       message: "Question room found.",
-      data: data,
+      data: { roomData, questionData },
     };
 
     res.status(response.statusCode).send(response);
@@ -200,14 +211,18 @@ router.put(
       throw new UserError("Room not found", 404);
     }
 
-    const result = await EntityCrud.update(
-      `ROOM#${roomUuid}`,
-      `ROOM#${roomUuid}`,
-      { active: "false" }
-    );
-    if (result == null) {
+    // Fetch the room to verify it exists and belongs to the user
+    const room = await EntityCrud.get(`ROOM#${roomUuid}`, `ROOM#${roomUuid}`);
+    if (!room || room.active == "false") {
       throw new UserError("Room not found", 404);
     }
+    if (room.teacherId !== req.user.id) {
+      throw new UserError("You are not authorized to delete this room", 403);
+    }
+
+    await EntityCrud.update(`ROOM#${roomUuid}`, `ROOM#${roomUuid}`, {
+      active: "false",
+    });
 
     const response: SuccessResponse<null> = {
       status: "success",
