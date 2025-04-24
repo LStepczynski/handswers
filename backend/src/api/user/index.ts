@@ -13,6 +13,7 @@ import { UserCrud } from "@services/userCrud";
 import { verifyUsersGetBody } from "./utils/verifyUsersGetBody";
 import { verifyUsersPutBody } from "./utils/verifyUsersPutBody";
 import { verifyUsersDeleteBody } from "./utils/verifyUsersDeleteBody";
+import { isUuid } from "@utils/isUuid";
 
 const router = Router();
 
@@ -33,6 +34,98 @@ router.get(
       statusCode: 200,
       message: "school objects fetched successfuly",
       data: schoolResp,
+    };
+
+    res.status(response.statusCode).send(response);
+  })
+);
+
+router.post(
+  "/create/school",
+  authenticate(),
+  role(["admin"]),
+  asyncHandler(async (req: Request, res: Response) => {
+    const name = req.body.name;
+    const address = req.body.address;
+
+    if (typeof name != "string" || name == "" || name.length > 150) {
+      throw new UserError("Invalid name parameter");
+    }
+    if (typeof address != "string" || address == "" || address.length > 150) {
+      throw new UserError("Invalid address parameter");
+    }
+
+    const id = uuid();
+    const schoolObj = await SchoolCrud.create({
+      id,
+      name,
+      address,
+    });
+
+    const response: SuccessResponse<Record<string, any>> = {
+      status: "success",
+      statusCode: 200,
+      message: "School object created successfuly",
+      data: schoolObj,
+    };
+
+    res.status(response.statusCode).send(response);
+  })
+);
+
+router.put(
+  "/edit/school/:id",
+  authenticate(),
+  role(["admin"]),
+  asyncHandler(async (req: Request, res: Response) => {
+    const name = req.body.name;
+    const address = req.body.address;
+    const id = req.params.id;
+
+    if (typeof name != "string" || name == "" || name.length > 150) {
+      throw new UserError("Invalid name parameter");
+    }
+    if (typeof address != "string" || address == "" || address.length > 150) {
+      throw new UserError("Invalid address parameter");
+    }
+    if (!isUuid(id)) {
+      throw new UserError("Invalid school id");
+    }
+
+    const schoolObj = await SchoolCrud.update(id, {
+      name,
+      address,
+    });
+
+    const response: SuccessResponse<Record<string, any>> = {
+      status: "success",
+      statusCode: 200,
+      message: "School object edited successfuly",
+      data: schoolObj,
+    };
+
+    res.status(response.statusCode).send(response);
+  })
+);
+
+router.delete(
+  "/delete/school/:id",
+  authenticate(),
+  role(["admin"]),
+  asyncHandler(async (req: Request, res: Response) => {
+    const id = req.params.id;
+
+    if (!isUuid(id)) {
+      throw new UserError("Invalid school id");
+    }
+
+    await SchoolCrud.delete(id);
+
+    const response: SuccessResponse<null> = {
+      status: "success",
+      statusCode: 200,
+      message: "School object deleted successfuly",
+      data: null,
     };
 
     res.status(response.statusCode).send(response);

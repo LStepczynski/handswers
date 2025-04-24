@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "deploy": "serverless deploy",
     "dev": "serverless offline",
-    "build": "serverless package",
     "docker": "docker-compose -p handswers-backend up",
     "debug": "node --inspect-brk node_modules/serverless/bin/serverless offline",
     "studio": "npx dynamodb-admin",

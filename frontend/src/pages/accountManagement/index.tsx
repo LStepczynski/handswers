@@ -27,15 +27,10 @@ import { Separator } from "@/components/ui/separator";
 import { AddUsersButton } from "./addUsersButton";
 import { getUser } from "@/utils/getUser";
 import { useBreadcrumbs } from "@/components/custom/navBreadcrumbs/breadcrumbProvider";
+import { AddSchoolButton } from "./addSchoolButton";
+import { EditSchoolButton } from "./editSchoolButton";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
-
-const cacheSettings = {
-  schoolFetch: {
-    cache: true,
-    duration: 60 * 15,
-  },
-};
 
 const breadcrumbs = [
   {
@@ -63,12 +58,10 @@ export const AccountManagement = () => {
     return null;
   }
 
-  const { data: schools } = useFetchData(
+  const { data: schools, setData } = useFetchData(
     `${backendUrl}/user/get/schools?page=${page}`,
     [],
-    {},
-    cacheSettings.schoolFetch.cache,
-    cacheSettings.schoolFetch.duration
+    {}
   );
 
   if (schools == null) {
@@ -90,9 +83,14 @@ export const AccountManagement = () => {
           {(schools as any).map((school: any) => (
             <AccordionItem value={school.id}>
               {/* Trigger for the dropdown */}
-              <AccordionTrigger className="h-20">
-                <h4 className="text-lg font-semibold">{school.name}</h4>
-              </AccordionTrigger>
+              <div className="relative">
+                <AccordionTrigger className="h-20 w-full">
+                  <h4 className="text-lg font-semibold">{school.name}</h4>
+                </AccordionTrigger>
+                <div className="absolute top-[50%] right-[25px] translate-y-[-50%]">
+                  <EditSchoolButton school={school} setData={setData} />
+                </div>
+              </div>
               {/* Content of the dropdown */}
               <AccordionContent className="mb-6 px-4 py-2 bg-muted rounded-md transition-all data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up">
                 {/* Add users button */}
@@ -123,6 +121,9 @@ export const AccountManagement = () => {
             </AccordionItem>
           ))}
         </Accordion>
+      </div>
+      <div className="w-full flex justify-end my-4">
+        <AddSchoolButton />
       </div>
       {/* Pagination */}
       <div className="mt-8">
