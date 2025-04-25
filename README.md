@@ -1,5 +1,7 @@
 # Handswers
 
+![Hero Image](./images/homePage.png)
+
 **Handswers** is a conceptual AI-powered education platform where teachers create topic-based question rooms, and students engage in threaded conversations guided by a Socratic AI tutor. The app is designed to save teachers time by offloading repeated student questions while encouraging critical thinking and self-directed learning through natural dialogue.
 
 > ⚠️ This is a **portfolio project** built to demonstrate full-stack development, AI integration, and UI/UX design. It is not a real service or affiliated with any school district or institution.
@@ -7,6 +9,8 @@
 # 🧠 Functionality & Step-by-Step Tutorial
 
 Handswers is an interactive educational web app where teachers and students engage in structured, AI-supported conversations through "question rooms." These rooms help offload repeated student questions and guide learners using a Socratic AI assistant built with the Gemini API.
+
+View the **/image** folder for images of the website
 
 Below is a walkthrough of what users can do in the app and how each step works in practice.
 
