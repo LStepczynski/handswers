@@ -7,6 +7,7 @@
     "docker": "docker-compose -p handswers-backend up",
     "debug": "node --inspect-brk node_modules/serverless/bin/serverless offline",
     "studio": "npx dynamodb-admin",
+    "createEnv": "ts-node src/scripts/generateEnv.ts",
     "createTables": "ts-node -r tsconfig-paths/register src/scripts/dynamodbCreateTables.ts",
     "deleteTables": "ts-node -r tsconfig-paths/register src/scripts/dynamodbDeleteTables.ts",
     "scanTable": "ts-node -r tsconfig-paths/register src/scripts/dynamodbScanTable.ts"

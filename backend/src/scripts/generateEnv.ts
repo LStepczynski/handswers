@@ -65,7 +65,8 @@ const fields = [
 
   rl.close();
 
-  const ending = values[values.length - 2] == "development" ? "dev" : "prod";
+  const ending =
+    values[values.length - 3] == "development" ? "dev" : "production";
 
   const envPath = path.join(__dirname, "../../.env." + ending);
   const envContent = fields
@@ -74,4 +75,7 @@ const fields = [
 
   fs.writeFileSync(envPath, envContent);
   console.log(`✅ .env file created at ${envPath}`);
+  console.log(
+    `A .env file with a .${ending} extention was created. It will be used only in the ${ending} stage.`
+  );
 })();
